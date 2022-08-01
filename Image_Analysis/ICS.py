@@ -91,6 +91,7 @@ def rotate_image(image, angle):
 
     return result
 
+# TODO: How necessary is this part? Maybe only useful if the image is not a square.
 def largest_rotated_rect(w, h, angle):
     """
     Given a rectangle of size wxh that has been rotated by 'angle' (in
@@ -126,6 +127,7 @@ def largest_rotated_rect(w, h, angle):
         bb_h - 2 * y
     )
 
+# Crop an image about its centre point
 def crop_around_center(image, width, height):
     """
     Given a NumPy / OpenCV 2 image, crops it to the given width and height,
@@ -153,25 +155,19 @@ def init():
     test_movie.set_data(crop_image - crop_image)
     return test_movie,
 
-# animation function.  This is called sequentially
-def animate(j):
+# Animation function.  This is called sequentially
+def animate_shifts(j):
     # directions = [R,U,L,D]    |    direction_repeats = [1,1,3,3,4,4,5,5,...,Nshift,Nshift]
     direct = directions[np.mod(j,len(directions)-1)]
     shift_image, low_lim_x, upp_lim_x, low_lim_y, upp_lim_y = shift_crop_dir(direct,j)
     tran_image = crop_image*shift_image
     L2_norm[j,0] = np.sum(crop_image*shift_image)
-    for i in range(num_angles-1):
-        rot_image = rotate_image(test_image,360*(i+1)/num_angles)
-        rot_image = rot_image[low_lim_x:upp_lim_x, low_lim_y:upp_lim_y]
-        L2_norm[j,i] = np.sum(crop_image*rot_image)
     R_vals[j] = np.sqrt(np.power(low_lim_x-low_lim, 2) + np.power(low_lim_y-low_lim, 2))
-    #L2_norm[j] = np.sum(crop_image*shift_image)/np.sum(crop_image*crop_image)
     #tran_image = np.power((crop_image-shift_image),2)
     #L2_norm[j] = np.sqrt(np.sum(np.power((crop_image-shift_image),2)))
     tran_images[j,:,:] = tran_image
     test_movie.set_data(tran_image)
-    #test_movie.text("frame: " + str(j))
-    #return test_movie,
+    return test_movie,
 
 # Helper function for deciding how to shift the matrix
 def shift_crop_dir(x, j):
@@ -226,7 +222,7 @@ image_dim = np.size(test_image[0,:])
 #====================================================================
 
 # Define fraction of image boarder to be cropped: A*
-crop_frac = 1/2.5
+crop_frac = 1/2.1
 low_lim = int(np.floor(image_dim*crop_frac))
 upp_lim = int(np.floor(image_dim*(1-crop_frac)))
 low_lim_x = low_lim
@@ -236,7 +232,7 @@ upp_lim_y = upp_lim
 # Define the order of shift spiral
 directions = ['R', 'U', 'L', 'D']
 # Max number of shifts
-num_shifts = int(low_lim)
+num_shifts = int(low_lim/10)
 num_angles = num_shifts
 # Init transformation matrix ~ movie
 tran_images = np.zeros([num_shifts, upp_lim-low_lim, upp_lim-low_lim])
@@ -262,8 +258,9 @@ crop_image = reff_image[low_lim:upp_lim, low_lim:upp_lim]
 ax = plt.axes(xlim=(0, upp_lim-low_lim), ylim=(0,upp_lim-low_lim))
 test_movie = ax.imshow(crop_image)
 # call the animator.  blit=True means only re-draw the parts that have changed.
-""" anim = animation.FuncAnimation(fig, animate, init_func=init,
-                            frames=num_shifts, interval=20, blit=True)  """
+anim = animation.FuncAnimation(fig, animate_shifts, init_func=init,
+                            frames=num_shifts, interval=20, blit=True) 
+
 for j in range(num_shifts):
     # directions = [R,U,L,D]    |    direction_repeats = [1,1,3,3,4,4,5,5,...,Nshift,Nshift]
     direct = directions[np.mod(j,len(directions)-1)]
@@ -279,7 +276,6 @@ for j in range(num_shifts):
     #tran_image = np.power((crop_image-shift_image),2)
     #L2_norm[j] = np.sqrt(np.sum(np.power((crop_image-shift_image),2)))
     tran_images[j,:,:] = tran_image
-    #test_movie.set_data(tran_image)
 #anim.save('basic_animation.gif', fps=5)
 
 # save the animation as an mp4.  This requires ffmpeg or mencoder to be
