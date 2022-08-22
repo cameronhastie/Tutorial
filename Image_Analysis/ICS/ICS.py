@@ -61,14 +61,22 @@ def compute_N(G, lam, NA, pix_per_dl):
     Num_Beads = image_dim2/(G0_est*np.pi*w02)
     return Num_Beads
 
-def compute_wkernel(image_dim, a, b):
-    wave_mat = np.ones(image_dim, image_dim)
-    bx = b[0]
-    by = b[1]
-    for i in range(image_dim):
-        for j in range(image_dim):
-            del_rba2 = np.power((np.sqrt(np.power(i-bx,2) + np.power(j-by,2))/a),2)
-            wave_mat[i,j] = (2 - del_rba2)*np.exp(-1*del_rba2/2)   
+def compute_wkernel(image, a):
+    image_dim = np.size(image[0,:])
+    wave_mat = np.ones([image_dim, image_dim])
+    Tab = np.ones([image_dim, image_dim])
+    for m in range (image_dim):
+        bx = m - image_dim/2
+        for k in range (image_dim):
+            by = k - image_dim/2
+            for i in range(image_dim):
+                rx = i - image_dim/2
+                for j in range(image_dim):
+                    ry = j - image_dim/2
+                    del_rba2 = np.power((np.sqrt(np.power(rx-bx,2) + np.power(ry-by,2))/a),2)
+                    wave_mat[i,j] = (2 - del_rba2)*np.exp(-1*del_rba2/2) 
+            Tab[m,k] = np.sum(np.matmul(image, wave_mat))/a
+    return Tab
 
 def compute_WIMS(image, wave_mat, a, b):
     image_dim = np.size(image[0,:])
@@ -77,6 +85,17 @@ def compute_WIMS(image, wave_mat, a, b):
     for i in range(image_dim):
         for j in range(image_dim):
             Tab[i,j] = image[i,j]
+
+def G_heatmaps(image, G):
+    # This object is extensive and you can check out the documentation.
+    fig, ax = plt.subplots(1,2, figsize=(20, 10), dpi=80)
+    ax[0].imshow(image, cmap='jet');
+    ax[0].set_xlabel("x pixel", fontsize=15)
+    ax[0].set_ylabel("y pixel", fontsize=15)
+    ax[1].imshow(np.abs(G), cmap='jet');
+    ax[1].set_xlabel("x spatial frequency", fontsize=15)
+    ax[1].set_ylabel("y spatial frequency", fontsize=15)
+    plt.show()
 
 def G_surfaces(image, G):
 
@@ -156,7 +175,8 @@ data_fold = "2022-07-PDMS+TIRF/"
 #data_fold = "2022-07-Patterns/"
 
 test_name = "TIRF.tif"
-reff_name = "Just_Beads_TIRF_7000rpm.tif"
+reff_name = "unTIRF.tif"
+#reff_name = "Just_Beads_TIRF_7000rpm.tif"
 #test_name = "patterns overnight-2.tif"
 #reff_name = "rfp-3.tif"
 
@@ -180,9 +200,20 @@ image_dim = np.size(test_image[0,:])
 # MAGNIFY IMAGES ====================================================
 #====================================================================
 
-magnification = 10 # Nx magnification
+magnification = 80 # Nx magnification
 test_image = magnify_image(test_image, magnification)
 reff_image = magnify_image(reff_image, magnification)
+
+# WAVELET TRANSFORMATION ============================================
+#====================================================================
+
+image_dim = np.size(test_image,1)
+wave_mats = np.zeros([int(np.sqrt(image_dim)), image_dim, image_dim])
+wave_mat = compute_wkernel(test_image, 20)
+wave_mat = normalize_intensities(wave_mat)
+Tab = test_image*wave_mat
+plt.imshow(Tab)
+plt.show()
 
 # COMPUTE AUTOCORRELATION ===========================================
 #====================================================================
@@ -218,5 +249,5 @@ bead_num_unTIRF = str(compute_N(G_Ixy_reff, lam, NA, pixel2difflim))
 print("TIRF     N = " + bead_num_TIRF + "\n" +
       "unTIRF   N = " + bead_num_unTIRF)
 
-WIMS_test = compute_WIMS(test_image)
-WIMS_reff = compute_WIMS(reff_image)
+""" WIMS_test = compute_WIMS(test_image)
+WIMS_reff = compute_WIMS(reff_image) """
