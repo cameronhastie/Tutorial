@@ -11,13 +11,12 @@ Rest is modified by Cameron Hastie.
 
 # LIBRARY IMPORTS ===================================================
 #====================================================================
-from re import S
-from turtle import position
 import numpy as np                  # This library is essential for manipulating data.
 import matplotlib.pyplot as plt     # This library is essential for plotting data.
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import numpy as np
+import os
 
 # CUSTOM FUNCTIONS ==================================================
 #====================================================================
@@ -169,8 +168,9 @@ def G_profiles(image, G, lam, NA, pixel2difflim):
 
 # READ IMAGES =======================================================
 #====================================================================
-
-data_path = "C:/Users/Cameron/Documents/GitHub/Tutorial/Image_Analysis/data/"
+cwd = os.getcwd()
+os.chdir(os.getcwd())
+os.chdir("data")
 data_fold = "2022-07-PDMS+TIRF/"
 #data_fold = "2022-07-Patterns/"
 
@@ -180,8 +180,8 @@ reff_name = "unTIRF.tif"
 #test_name = "patterns overnight-2.tif"
 #reff_name = "rfp-3.tif"
 
-test_file = data_path + data_fold + test_name
-reff_file = data_path + data_fold + reff_name
+test_file = data_fold + test_name
+reff_file = data_fold + reff_name
 
 # Grab the test and reference images
 test_image = plt.imread(test_file)
@@ -200,20 +200,20 @@ image_dim = np.size(test_image[0,:])
 # MAGNIFY IMAGES ====================================================
 #====================================================================
 
-magnification = 80 # Nx magnification
+magnification = 20 # Nx magnification
 test_image = magnify_image(test_image, magnification)
 reff_image = magnify_image(reff_image, magnification)
 
 # WAVELET TRANSFORMATION ============================================
 #====================================================================
 
-image_dim = np.size(test_image,1)
+""" image_dim = np.size(test_image,1)
 wave_mats = np.zeros([int(np.sqrt(image_dim)), image_dim, image_dim])
 wave_mat = compute_wkernel(test_image, 20)
 wave_mat = normalize_intensities(wave_mat)
 Tab = test_image*wave_mat
 plt.imshow(Tab)
-plt.show()
+plt.show() """
 
 # COMPUTE AUTOCORRELATION ===========================================
 #====================================================================
@@ -234,7 +234,11 @@ G_surfaces(test_image, G_Ixy_test)
 G_surfaces(reff_image, G_Ixy_reff)
 
 pixel2difflim = 2
+pixel_size = 11e-6
+magnification = 100
+pixel_size = pixel_size/magnification
 lam = 488e-9
+pixel2difflim = pixel_size/lam
 NA = 1.49
 G_profiles(test_image, G_Ixy_test, lam, NA, pixel2difflim)
 G_profiles(reff_image, G_Ixy_reff, lam, NA, pixel2difflim)
