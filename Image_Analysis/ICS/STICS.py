@@ -262,14 +262,14 @@ def G_profiles(image, G, lam, NA, pixel2difflim):
 # READ IMAGES =======================================================
 #====================================================================
 
-showplots = False
+showplots = True
 
-data_path = "C:/Users/Cameron/Documents/GitHub/Tutorial/Image_Analysis/data/"
-data_fold = "2022-09-Heart_Cells/"
-#data_fold = "2022-07-PDMS+TIRF/"
+data_path =  "C:/Users/Cameron/Documents/GitHub/Tutorial/data/"
+data_fold = "2022-07-PDMS+TIRF/"
+#data_fold = "2022-09-Heart_Cells/"
 #data_fold = "2022-07-Patterns/"
 
-test_name = "Heart_cell_EPI_crop.tif"
+test_name = "iCM-point4-beads-31fps_cropped.tif"
 #test_name = "TIRF.tif"
 
 test_file = data_path + data_fold + test_name
