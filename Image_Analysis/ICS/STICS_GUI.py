@@ -50,8 +50,8 @@ data_fold = "2022-07-PDMS+TIRF/"
 #data_fold = "2022-09-Heart_Cells/"
 #data_fold = "2022-07-Patterns/"
 
-test_name = "iCM-point4-beads-31fps_sss.tif"
-#test_name = "iCM-point4-beads-31fps_cropped.tif"
+#test_name = "iCM-point4-beads-31fps_sss.tif"
+test_name = "iCM-point4-beads-31fps_cropped.tif"
 #test_name = "iCM-point4-beads-31fps_CS.tif"
 #test_name = 
 #test_name = "TIRF.tif"
@@ -67,8 +67,6 @@ test_images = crop_images(test_images)
 
 viewer = napari.view_image(test_images)
 gcorr_images = np.log(np.abs(gspace_correlation(test_images)))
-
-
 
 viewer.add_image(gcorr_images)
 napari.run()
